@@ -57,13 +57,14 @@ public class PreventDuplicateSubmitAspect {
         Method method = ((MethodSignature) proceedingJoinPoint.getSignature()).getMethod();
         // 获取注解
         PreventDuplicateSubmit methodAnnotation = method.getAnnotation(PreventDuplicateSubmit.class);
-
-        Boolean isDuplicateSubmit = redisCache.isCaught(cacheKey, methodAnnotation.interval(), TimeUnit.SECONDS);
-        //aBoolean为true则证明没有重复提交
-        if(isDuplicateSubmit){
-            //JSON.toJSONString(ResponseResult.errorResult(HttpCodeEnum.SYSTEM_ERROR.getCode(),annotation.message())));
-            logger.info("阻止一次重复提交");
-            return new Result("500", "请勿重复提交");
+        if (methodAnnotation != null) {
+            Boolean isDuplicateSubmit = redisCache.isCaught(cacheKey, methodAnnotation.interval(), TimeUnit.SECONDS);
+            //aBoolean为true则证明没有重复提交
+            if(isDuplicateSubmit){
+                //JSON.toJSONString(ResponseResult.errorResult(HttpCodeEnum.SYSTEM_ERROR.getCode(),annotation.message())));
+                logger.info("阻止一次重复提交");
+                return new Result("500", "请勿重复提交");
+            }
         }
         return proceedingJoinPoint.proceed();
     }
