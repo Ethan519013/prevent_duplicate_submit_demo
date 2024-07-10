@@ -3,7 +3,6 @@ package com.ethan.aspect;
 import com.alibaba.fastjson.JSON;
 import com.ethan.annotation.PreventDuplicateSubmit;
 import com.ethan.utils.RedisCache;
-import com.ethan.utils.Result;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -58,12 +57,12 @@ public class PreventDuplicateSubmitAspect {
         // 获取注解
         PreventDuplicateSubmit methodAnnotation = method.getAnnotation(PreventDuplicateSubmit.class);
 
+        //redis分布式锁
         Boolean isDuplicateSubmit = redisCache.isCaught(cacheKey, methodAnnotation.interval(), TimeUnit.SECONDS);
         //aBoolean为true则证明没有重复提交
         if(isDuplicateSubmit){
             //JSON.toJSONString(ResponseResult.errorResult(HttpCodeEnum.SYSTEM_ERROR.getCode(),annotation.message())));
-            logger.info("阻止一次重复提交");
-            return new Result("500", "请勿重复提交");
+            throw  new RuntimeException("请勿重复提交");
         }
         return proceedingJoinPoint.proceed();
     }
